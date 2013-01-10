@@ -45,6 +45,7 @@ static CRCContentType requestContentType;
 
 @implementation CocoaRestClientAppDelegate
 
+
 @synthesize window;
 @synthesize submitButton;
 @synthesize urlBox;
@@ -119,6 +120,13 @@ static CRCContentType requestContentType;
     self.welcomeController = [[WelcomeController alloc] initWithWindowNibName:@"Welcome"];
      
 	return self;
+}
+
+- (void) setHighlightSyntaxForMIME:(NSString*) mimeType
+{
+    /**
+     * @TODO: implementation
+     */
 }
 
 - (void) setRawRequestInput:(BOOL)value{
@@ -407,9 +415,9 @@ static CRCContentType requestContentType;
 	[status setStringValue:@"Receiving Data..."];
 	NSMutableString *headers = [[NSMutableString alloc] init];
 	NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
-	[headers appendFormat:@"HTTP %d %@\n\n", [httpResponse statusCode], [[NSHTTPURLResponse localizedStringForStatusCode:[httpResponse statusCode]] capitalizedString]];
+	[headers appendFormat:@"HTTP %ld %@\n\n", [httpResponse statusCode], [[NSHTTPURLResponse localizedStringForStatusCode:[httpResponse statusCode]] capitalizedString]];
 	
-	[headersTab setLabel:[NSString stringWithFormat:@"Response Headers (%d)", [httpResponse statusCode]]];
+	[headersTab setLabel:[NSString stringWithFormat:@"Response Headers (%ld)", [httpResponse statusCode]]];
 	
 	NSDictionary *headerDict = [httpResponse allHeaderFields];
     contentType = nil;
@@ -602,7 +610,7 @@ static CRCContentType requestContentType;
 	[picker setCanChooseDirectories:NO];
 	[picker setAllowsMultipleSelection:NO];
 	
-	if ( [picker runModalForDirectory:nil file:nil] == NSOKButton ) {
+	if ( [picker runModal] == NSOKButton ) {
 		for(NSURL* url in [picker URLs]) {
 			NSMutableDictionary *row = [[NSMutableDictionary alloc] init];
 			[row setObject:@"file" forKey:@"key"];
@@ -999,13 +1007,15 @@ static CRCContentType requestContentType;
 }
 
 - (NSString *) pathForDataFile {
-	NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSFileManager *fileManager = [[NSFileManager alloc] init];
     
 	NSString *folder = @"~/Library/Application Support/CocoaRestClient/";
 	folder = [folder stringByExpandingTildeInPath];
 	
 	if ([fileManager fileExistsAtPath: folder] == NO) {
-		[fileManager createDirectoryAtPath:folder attributes:nil];
+        NSError *error = nil;
+		[fileManager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:&error];
+        NSLog(@"%@", [error description]);
 	}
     
 	NSString *fileName = @"CocoaRestClient.savedRequests";
@@ -1050,7 +1060,7 @@ static CRCContentType requestContentType;
     
     NSMutableArray *loadedRequests = [[NSMutableArray alloc] init];
     
-    if ( [picker runModalForDirectory:nil file:nil] == NSOKButton ) {
+    if ( [picker runModal] == NSOKButton ) {
         @try {
             for(NSURL* url in [picker URLs]) {
                 NSString *path = [url path];
@@ -1175,11 +1185,12 @@ static CRCContentType requestContentType;
     NSSavePanel* picker = [NSSavePanel savePanel];
 	
     if ( [picker runModal] == NSOKButton ) {
-		NSString* path = [picker filename];
+		NSURL* path = [picker URL];
         NSLog(@"Saving requests to %@", path);
         
         NSError *error;
-        BOOL savedOK = [[responseText string] writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:&error];
+
+        BOOL savedOK = [[responseText string] writeToFile:(NSString *)path atomically:YES encoding:NSUTF8StringEncoding error:&error];
         
         if (! savedOK) {
             NSLog(@"Error writing file at %@\n%@", path, [error localizedFailureReason]);

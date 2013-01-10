@@ -62,7 +62,7 @@
 				// for now, though, it's just a simple rule.
 				NSRange result = [mimeType rangeOfString:@"image"];
 				if(result.length > 0)
-					[body appendData:[[NSString stringWithString:@"Content-Transfer-Encoding: binary\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+					[body appendData:[@"Content-Transfer-Encoding: binary\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				
 				[body appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];	

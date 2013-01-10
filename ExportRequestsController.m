@@ -67,7 +67,7 @@
     NSSavePanel* picker = [NSSavePanel savePanel];
 	
     if ( [picker runModal] == NSOKButton ) {
-		NSString* path = [picker filename];
+		NSURL* path = [picker URL];
         NSLog(@"Saving requests to %@", path);
         
         NSMutableArray *requestsToExport = [[NSMutableArray alloc] init];
@@ -79,7 +79,7 @@
         }
         
         if ([requestsToExport count] > 0) {
-            [NSKeyedArchiver archiveRootObject:requestsToExport toFile:path];
+            [NSKeyedArchiver archiveRootObject:requestsToExport toFile:(NSString *)path];
         }
     }
     
